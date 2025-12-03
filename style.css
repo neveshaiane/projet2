@@ -1,0 +1,8 @@
+/* Styles minimalistes pour le quiz */
+.question-card{ margin-bottom:14px; }
+.question-card .card-body{ transition: background-color 0.25s ease; }
+.full-correct{ background-color: #d4edda !important; } /* vert */
+.partial-correct{ background-color: #fff3cd !important; } /* jaune */
+.wrong-correct{ background-color: #f8d7da !important; } /* rouge */
+.answer-reveal{ font-weight:600; color:#0b5ed7; }
+.hidden { display: none !important; }
