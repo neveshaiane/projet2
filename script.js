@@ -1,7 +1,7 @@
 // projet 2 questions data
 
 const questions = [
-  { id: 1, text: "Comment dit-on 'Bonjour' en portugais ? (2 réponses attendues)", type: 'checkbox', options: ['Bom dia','Olá','tchau','até mais'], correct: [0,1] },
+  { id: 1, text: "Comment dit-on 'Bonjour' en portugais ? (2 réponses attendues)", type: 'checkbox', options: ['Bom dia','Olá','Tchau','Até mais'], correct: [0,1] },
   { id: 2, text: "Que peut-on dire si on rencontre quelqu'un qu'on n'a pas vu depuis longtemps ? (2 réponses)", type: 'checkbox', options: ['Faz tempo que não vejo você!','Que bom te ver!','Prazer em conhecê-lo(a).','Nos falamos ontem.'], correct: [0,1] },
   { id: 3, text: "Que peut-on dire si quelqu'un nous manque ?", type: 'radio', options: ['Tudo bem.','Estou com saudades de você.','O dia está bonito.'], correct: 1 },
   { id: 4, text: 'Comment dire "ça va" en portugais ?', type: 'text', correct: ['tudo bem','tudo bom','como vai'] },
@@ -112,6 +112,8 @@ function buildQuiz(){
     showBtn.type = 'button';
     showBtn.className = 'btn btn-link btn-sm ml-2 show-answer-btn';
     showBtn.dataset.qid = q.id;
+    showBtn.textContent = 'Afficher la réponse'; // bouton pour afficher la réponse
+    showBtn.setAttribute('aria-label', 'Afficher la bonne réponse pour cette question');
     showBtn.addEventListener('click', () => toggleRevealAnswer(q.id));
 
     // validate (submit) button per question
@@ -211,6 +213,17 @@ function collectAnswer(q){
   }
 }
 
+// normalise texte (trim, lowercase, retire diacritiques)
+function normalizeText(str){
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .trim()
+    .normalize('NFD')                 // sépare caractères + diacritiques
+    .replace(/[\u0300-\u036f]/g, '') // retire diacritiques
+    .replace(/\s+/g, ' ')            // espaces multiples -> simple espace
+    .toLowerCase();
+}
+
 function grade(){
   let totalFull=0, totalPossible=questions.length;
   const detailed = [];
@@ -223,7 +236,10 @@ function grade(){
     if (q.type==='text'){
       if (answer===null || answer===''){ result.status='wrong'; result.score=0; }
       else{
-        const ok = Array.isArray(q.correct) ? q.correct.map(s=>s.toLowerCase()).includes(answer.toLowerCase()) : String(q.correct).toLowerCase()===answer.toLowerCase();
+        const normAns = normalizeText(answer);
+        const ok = Array.isArray(q.correct)
+          ? q.correct.map(s=>normalizeText(s)).includes(normAns)
+          : normalizeText(String(q.correct)) === normAns;
         if (ok){ result.status='full'; result.score=1; totalFull++; }
       }
     } else if (q.type==='radio' || q.type==='select'){

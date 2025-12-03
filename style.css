@@ -1,8 +1,11 @@
 /* Styles minimalistes pour le quiz */
 .question-card{ margin-bottom:14px; }
 .question-card .card-body{ transition: background-color 0.25s ease; }
-.full-correct{ background-color: #d4edda !important; } /* vert */
-.partial-correct{ background-color: #fff3cd !important; } /* jaune */
-.wrong-correct{ background-color: #f8d7da !important; } /* rouge */
+.full-correct { background-color: #d4edda !important; }   /* vert clair */
+.partial-correct { background-color: #fff3cd !important; }/* jaune clair */
+.wrong-correct { background-color: #f8d7da !important; }  /* rouge clair */
+/* note: !important pour surcharger styles Bootstrap des .card-body */
+.submitted-note { font-weight: 600; }
+.reveal .answer-reveal { font-style: italic; color: #333; }
 .answer-reveal{ font-weight:600; color:#0b5ed7; }
 .hidden { display: none !important; }
