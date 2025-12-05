@@ -6,31 +6,29 @@
   <title>Projet 2 — Questionnaire progressif</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
 </head>
 <body class="bg-light py-4">
   <div class="container">
-    <h1 class="mb-3">Questionnaire</h1>
-    <p class="text-muted">Les questions apparaissent une à une ; repondez pour faire apparaître la suivante.</p>
+    <h1 class="mx-auto">Questionnaire</h1>
+    <p class="text-muted alert alert-info rounded-pill"> <i class="bi bi-arrow-right mr-2"></i>Les questions apparaissent une à une ; repondez pour faire apparaître la suivante.</p>
 
-    <form id="quizForm" class="mb-3">
-      <div id="questions"></div>
+    <form id="quizForm" class="mb-3 rounded-pill">
+      <div id="questions" class="rounded-pill outline-success"></div>
 
       <div class="d-flex align-items-center mb-3">
         <div class="progress flex-fill mr-3">
           <div id="progressBar" class="progress-bar" role="progressbar" style="width:0%">0%</div>
         </div>
-        <div id="scoreText">0 bonnes réponses</div>
+        <div id="scoreText" class="hidden">0 bonnes réponses</div>
       </div>
-
-      <button id="verifyBtn" type="button" class="btn btn-primary mb-3">Vérifier</button>
+      <button id="verifier" type="button" class="btn btn-primary mb-3 hidden">Vérifier les réponses</button>
     </form>
-
     <div class="mt-4">
-      <h5>Résultats détaillés</h5>
+      <h5 class="hidden">Résultats détaillés</h5>
       <div id="results"></div>
     </div>
   </div>
-
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
   <script src="script.js" type="module"></script>

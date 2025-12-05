@@ -13,17 +13,16 @@ const questions = [
   { id: 10, text: 'Comment dit-on "au revoir" en portugais ?', type: 'text', correct: ['tchau','até mais','até logo','até breve','adeus'] }
 ];
 
-let currentQuestionIndex = 0;
-let userAnswers = {}; // store answers by question id
+let userAnswers = {}; // réponses utilisateur stockées par id de question
 
-// DOM refs
+// éléments du DOM 
 const questionsContainer = document.getElementById('questions');
-const verifyBtn = document.getElementById('verifyBtn');
+const verifier = document.getElementById('verifier');
 const progressBar = document.getElementById('progressBar');
 const scoreText = document.getElementById('scoreText');
 const resultsDiv = document.getElementById('results');
 
-// build UI: each question hidden except first
+// toutes les questions cachées sauf la première
 function buildQuiz(){
   questionsContainer.innerHTML = '';
   questions.forEach((q, idx) => {
@@ -74,8 +73,6 @@ function buildQuiz(){
         div.appendChild(inp);
         div.appendChild(lab);
         answerWrap.appendChild(div);
-
-        // no auto-advance on change; submit via 'Valider'
       });
     } else if (q.type === 'checkbox'){
       q.options.forEach((opt, i) => {
@@ -92,8 +89,6 @@ function buildQuiz(){
         div.appendChild(inp);
         div.appendChild(lab);
         answerWrap.appendChild(div);
-
-        // no auto-advance on change; submit via 'Valider'
       });
     } else if (q.type === 'select'){
       const sel = document.createElement('select');
@@ -104,28 +99,17 @@ function buildQuiz(){
         const o = document.createElement('option'); o.value = i; o.textContent = opt; sel.appendChild(o);
       });
       answerWrap.appendChild(sel);
-      // no auto-advance on select change
     }
 
-    // show answer button
-    const showBtn = document.createElement('button');
-    showBtn.type = 'button';
-    showBtn.className = 'btn btn-link btn-sm ml-2 show-answer-btn';
-    showBtn.dataset.qid = q.id;
-    showBtn.textContent = 'Afficher la réponse'; // bouton pour afficher la réponse
-    showBtn.setAttribute('aria-label', 'Afficher la bonne réponse pour cette question');
-    showBtn.addEventListener('click', () => toggleRevealAnswer(q.id));
-
-    // validate (submit) button per question
+    // validate (submit) button per question (no "Afficher la réponse" here)
     const validateBtn = document.createElement('button');
     validateBtn.type = 'button';
-    validateBtn.className = 'btn btn-success btn-sm ml-2 validate-btn';
+    validateBtn.className = 'btn btn-success btn-sm mt-2 ml-2 validate-btn';
     validateBtn.textContent = 'Valider';
     validateBtn.dataset.qid = q.id;
     validateBtn.addEventListener('click', () => submitAnswer(q.id));
 
     body.appendChild(answerWrap);
-    body.appendChild(showBtn);
     body.appendChild(validateBtn);
     card.appendChild(body);
     questionsContainer.appendChild(card);
@@ -136,7 +120,7 @@ function submitAnswer(qid){
   const q = questions.find(x=>x.id===qid);
   if (!q) return;
   const answer = collectAnswer(q);
-  // store answer (could be null)
+  //  stocker la réponse
   userAnswers[qid] = answer;
 
   // optionally disable inputs to prevent modification after submit
@@ -155,44 +139,30 @@ function submitAnswer(qid){
     }
   }
 
-  // then advance to next question
+  // question suivante
   revealNext(qid);
 }
 
 function revealNext(qid){
-  // find index of this question
+  // trouver l'index de cette question
   const idx = questions.findIndex(q=>q.id===qid);
   if (idx >= 0){
-    // hide current card
+    // cacher la carte actuelle
     const currentCard = questionsContainer.children[idx];
     if (currentCard && !currentCard.classList.contains('hidden')) currentCard.classList.add('hidden');
 
-    // reveal next card if exists
+    // révéler la carte suivante si elle existe
     if (idx < questions.length-1){
       const nextCard = questionsContainer.children[idx+1];
       if (nextCard && nextCard.classList.contains('hidden')) nextCard.classList.remove('hidden');
+    } else {
+      // dernière question soumise — révéler le bouton final verifier
+      if (verifier){
+        verifier.classList.remove('hidden');
+        verifier.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
     }
   }
-}
-
-function toggleRevealAnswer(qid){
-  // show correct answer inline under the question
-  const q = questions.find(x=>x.id===qid);
-  const card = [...questionsContainer.children].find(c=>Number(c.dataset.qid)===qid);
-  if (!card) return;
-  let reveal = card.querySelector('.reveal');
-  if (reveal){ reveal.remove(); return; }
-  reveal = document.createElement('div'); reveal.className='reveal mt-2';
-  const ans = document.createElement('div'); ans.className='answer-reveal';
-  if (q.type==='text'){
-    ans.textContent = `Réponse: ${Array.isArray(q.correct)?q.correct.join(', '):q.correct}`;
-  } else if (q.type==='checkbox'){
-    ans.textContent = 'Réponse: ' + q.correct.map(i=>q.options[i]).join(', ');
-  } else if (q.type==='radio' || q.type==='select'){
-    ans.textContent = `Réponse: ${q.options[q.correct]}`;
-  }
-  reveal.appendChild(ans);
-  card.querySelector('.card-body').appendChild(reveal);
 }
 
 function collectAnswer(q){
@@ -229,7 +199,7 @@ function grade(){
   const detailed = [];
 
   questions.forEach(q=>{
-    // prefer stored submitted answer if available, otherwise read current inputs
+    // préférer la réponse soumise stockée si disponible, sinon lire les entrées actuelles
     const answer = (userAnswers[q.id] !== undefined) ? userAnswers[q.id] : collectAnswer(q);
     let result = { id:q.id, status:'wrong', score:0 };
 
@@ -250,7 +220,7 @@ function grade(){
       else {
         const correctSet = new Set(q.correct);
         const answerSet = new Set(answer);
-        // count matching
+        // compter les correspondances
         let matchCount=0; for (const a of answerSet) if (correctSet.has(a)) matchCount++;
         if (matchCount===0){ result.status='wrong'; result.score=0; }
         else if (matchCount===correctSet.size && answerSet.size===correctSet.size){ result.status='full'; result.score=1; totalFull++; }
@@ -264,10 +234,14 @@ function grade(){
   return { totalFull, totalPossible, detailed };
 }
 function applyFeedback(grades){
-  // clear previous
+  // effacer les précédents
   resultsDiv.innerHTML='';
 
-  // helper to format answer values into readable text
+  // révéler la zone des résultats et le texte du score (ils sont cachés par défaut dans le HTML)
+  if (resultsDiv) resultsDiv.classList.remove('hidden');
+  if (scoreText) scoreText.classList.remove('hidden');
+
+  // formater les valeurs de réponse en texte lisible
   function formatAnswer(q, answer){
     if (answer === null || answer === undefined || (Array.isArray(answer) && answer.length===0) || answer === '') return 'Aucune réponse';
     if (q.type === 'text') return String(answer);
@@ -285,7 +259,7 @@ function applyFeedback(grades){
     const card = [...questionsContainer.children].find(c=>Number(c.dataset.qid)===q.id);
     const g = grades.detailed.find(d=>d.id===q.id);
 
-    // build result card
+    // construire la carte de résultat
     const out = document.createElement('div');
     out.className = 'card mb-2';
     const body = document.createElement('div');
@@ -304,10 +278,28 @@ function applyFeedback(grades){
     body.appendChild(pUser);
 
     const pCorrect = document.createElement('p');
-    pCorrect.innerHTML = `<strong>Bonne(s) réponse(s):</strong> ${correctText}`;
+
+    const btnShow = document.createElement('button');
+    btnShow.type = 'button';
+    btnShow.className = 'btn btn-outline-info btn-sm';
+    btnShow.textContent = 'Afficher la bonne réponse';
+
+    const spanAns = document.createElement('span');
+    spanAns.className = 'ml-2';
+    spanAns.style.display = 'none';
+    spanAns.textContent = correctText;
+
+    btnShow.addEventListener('click', () => {
+      const visible = spanAns.style.display === 'inline';
+      spanAns.style.display = visible ? 'none' : 'inline';
+      btnShow.textContent = visible ? 'Afficher la bonne réponse' : 'Masquer la bonne réponse';
+    });
+
+    pCorrect.appendChild(btnShow);
+    pCorrect.appendChild(spanAns);
     body.appendChild(pCorrect);
 
-    // status badge
+    // badge de statut
     const status = document.createElement('div');
     status.className = 'mt-2';
     let badge = document.createElement('span');
@@ -331,7 +323,7 @@ function applyFeedback(grades){
     out.appendChild(body);
     resultsDiv.appendChild(out);
 
-    // also, mark original question card if present
+    // aussi, marquer la carte de question originale si présente
     if (card){
       card.querySelector('.card-body').classList.remove('full-correct','partial-correct','wrong-correct');
       if (g){
@@ -342,21 +334,25 @@ function applyFeedback(grades){
     }
   });
 
-  // progress bar and score text
+  // mettre à jour la barre de progression et le texte du score
   const percent = Math.round((grades.totalFull / grades.totalPossible) * 100);
   progressBar.style.width = percent + '%';
   progressBar.textContent = `${percent}%`;
   if (grades.totalFull===0) scoreText.textContent = `0 bonnes réponses sur ${grades.totalPossible}`;
   else scoreText.textContent = `${grades.totalFull} bonnes réponses sur ${grades.totalPossible}`;
+
+  // cacher bt vérifier
+  if (verifier) verifier.classList.add('hidden');
 }
 
-verifyBtn.addEventListener('click', ()=>{
-  const g = grade();
-  applyFeedback(g);
-});
+if (verifier){
+  verifier.addEventListener('click', ()=>{
+    const g = grade();
+    applyFeedback(g);
+  });
+}
 
 // init
 buildQuiz();
 
-// Export for debugging in console
-window._quiz = { questions, buildQuiz, grade, applyFeedback };
+// (no debug export)
