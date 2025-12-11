@@ -45,7 +45,7 @@ function buildQuiz(){
     body.appendChild(title);
     body.appendChild(p);
 
-    // answer area
+    // zone de réponse
     const answerWrap = document.createElement('div');
     answerWrap.className = 'answer-wrap';
 
@@ -55,7 +55,7 @@ function buildQuiz(){
       input.className = 'form-control answer-input';
       input.dataset.qid = q.id;
       answerWrap.appendChild(input);
-      // no auto-advance: user will click 'Valider' to submit this answer
+      // pas d'avance automatique : l'utilisateur cliquera sur « Valider » pour soumettre cette réponse
 
     } else if (q.type === 'radio'){
       q.options.forEach((opt, i) => {
@@ -101,7 +101,7 @@ function buildQuiz(){
       answerWrap.appendChild(sel);
     }
 
-    // validate (submit) button per question (no "Afficher la réponse" here)
+    // bouton Valider (Soumettre) par question (pas de « Afficher la réponse » ici)
     const validateBtn = document.createElement('button');
     validateBtn.type = 'button';
     validateBtn.className = 'btn btn-success btn-sm mt-2 ml-2 validate-btn';
@@ -123,13 +123,13 @@ function submitAnswer(qid){
   //  stocker la réponse
   userAnswers[qid] = answer;
 
-  // optionally disable inputs to prevent modification after submit
+  // désactiver éventuellement les entrées pour empêcher toute modification après la soumission
   const card = [...questionsContainer.children].find(c=>Number(c.dataset.qid)===qid);
   if (card){
     const inputs = card.querySelectorAll('.answer-input');
     inputs.forEach(i=> i.disabled = true);
 
-    // show a small confirmation
+    // afficher une petite confirmation
     let done = card.querySelector('.submitted-note');
     if (!done){
       done = document.createElement('div');
@@ -183,7 +183,7 @@ function collectAnswer(q){
   }
 }
 
-// normalise texte (trim, lowercase, retire diacritiques)
+// normaliser le texte (couper, mettre en minuscules, supprimer les diacritiques)
 function normalizeText(str){
   if (str === null || str === undefined) return '';
   return String(str)
@@ -236,6 +236,7 @@ function grade(){
 function applyFeedback(grades){
   // effacer les précédents
   resultsDiv.innerHTML='';
+
 
   // révéler la zone des résultats et le texte du score (ils sont cachés par défaut dans le HTML)
   if (resultsDiv) resultsDiv.classList.remove('hidden');
@@ -355,4 +356,4 @@ if (verifier){
 // init
 buildQuiz();
 
-// (no debug export)
+
